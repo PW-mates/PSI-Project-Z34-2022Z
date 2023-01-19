@@ -123,10 +123,6 @@ while True:
         pwd()
     elif command[0] == "LIST":
         list()
-    elif command[0] == "RETR":
-        retr(command[1])
-    elif command[0] == "STOR":
-        stor(command[1])
     elif command[0] == "CWD":
         cwd(command[1])
     elif command[0] == "QUIT":
