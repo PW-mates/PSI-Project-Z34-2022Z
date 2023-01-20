@@ -421,8 +421,6 @@ class FTPServer:
             if (transfer_type == 'A'):
                 open_mode = 'w'
             with open(file_path, open_mode) as f:
-                file_data = b''
-                file_length = 0
                 if (self.clients[client.getpeername()]['mode'] == 'passive'):
                     conn, addr = self.clients[client.getpeername()]['data_socket'].accept()
                     print('Connection accepted: ', conn.getpeername())
@@ -433,8 +431,15 @@ class FTPServer:
                             data = conn.recv(1024)
                             if not data:
                                 break
-                            file_data += data
-                            file_length += len(data)
+                            if (transfer_type == 'A'):
+                                try:
+                                    data = data.decode('ascii')
+                                    f.write(data)
+                                except Exception as e:
+                                    print('Error decoding file data: ', str(e))
+                                    client.send('550 File is not support in ascii mode\n'.encode('utf-8'))
+                                    return
+                            f.write(data)
                         if (self.clients[client.getpeername()]['auth_mode'] == 'TLS'):
                             conn = conn.unwrap()
                     finally:
@@ -458,7 +463,14 @@ class FTPServer:
                             data = sock.recv(1024)
                             if not data:
                                 break
-                            file_data += data
+                            if (transfer_type == 'A'):
+                                try:
+                                    data = data.decode('ascii')
+                                except Exception as e:
+                                    print('Error decoding file data: ', str(e))
+                                    client.send('550 File is not support in ascii mode\n'.encode('utf-8'))
+                                    return
+                            f.write(data)
                         if (self.clients[client.getpeername()]['auth_mode'] == 'TLS'):
                             sock = sock.unwrap()
                     except Exception as e:
@@ -474,15 +486,7 @@ class FTPServer:
                 else:
                     client.send('425 Use PORT or PASV first.\n'.encode('utf-8'))
                     return
-                print('File length: ', file_length)
-                if (transfer_type == 'A'):
-                    try:
-                        file_data = file_data.decode('ascii')
-                    except Exception as e:
-                        print('Error decoding file data: ', str(e))
-                        client.send('550 File is not support in ascii mode\n'.encode('utf-8'))
-                        return
-                f.write(file_data)
+                
                 client.send('226 Transfer complete.\n'.encode('utf-8'))
                 os.chown(file_path, self.clients[client.getpeername()]['session'].user.uid, self.clients[client.getpeername()]['session'].user.gid)
 
