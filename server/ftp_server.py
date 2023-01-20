@@ -78,7 +78,7 @@ class FTPServer:
                 print('Server stopped')
                 self.sock.close()
                 sys.exit(0)
-            self.clients[client.getpeername()] = {'client': client, 'address': address, 'auth_mode': 'plaintext'}
+            self.clients[client.getpeername()] = {'client': client, 'address': address, 'auth_mode': 'plaintext', 'transfer_type': 'I'}
             threading.Thread(target=self.handle_client, args=(client.getpeername(),), daemon=True).start()
 
     def run_tls(self):
@@ -93,7 +93,7 @@ class FTPServer:
                 print('Server stopped')
                 self.sock_tls.close()
                 sys.exit(0)
-            self.clients[client.getpeername()] = {'client': client, 'address': address, 'auth_mode': 'TLS'}
+            self.clients[client.getpeername()] = {'client': client, 'address': address, 'auth_mode': 'TLS', 'transfer_type': 'I'}
             print('Client peername: ', client.getpeername())
             threading.Thread(target=self.handle_client, args=(client.getpeername(),), daemon=True).start()
 
@@ -265,7 +265,7 @@ class FTPServer:
             print('Done listing files')
         except Exception as e:
             print('Error listing files: ', str(e))
-            client.send('550 Error listing files\n'.encode('utf-8'))
+            client.send(f'550 Error listing files\n'.encode('utf-8'))
     
     def cmd_syst(self, client, data):
         print('Sending system info...')
@@ -308,8 +308,13 @@ class FTPServer:
         print('Changing directory...')
         session = self.clients[client.getpeername()]['session']
         try:
-            session.cwd = data.split(' ')[1].strip()
-            client.send('250 CWD command successful\n'.encode('utf-8'))
+            cwd = session.cwd
+            session.change_dir(data.split(' ')[1].strip())
+            if (os.path.exists(session.cwd) and os.path.isdir(session.cwd)):
+                client.send('250 CWD command successful\n'.encode('utf-8'))
+            else:
+                session.cwd = cwd
+                client.send('550 Error changing directory\n'.encode('utf-8'))
         except Exception as e:
             print('Error changing directory: ', str(e))
             client.send('550 Error changing directory\n'.encode('utf-8'))
@@ -327,6 +332,7 @@ class FTPServer:
         file_path = data.split(' ')[1].strip()
         file_path = os.path.join(session.cwd, file_path)
         print(f'File path: {file_path}')
+        client.send('150 Opening data connection for file transfer.\n'.encode('utf-8'))
         try:
             # check file transfer mode
             transfer_type = self.clients[client.getpeername()]['transfer_type']
@@ -407,6 +413,7 @@ class FTPServer:
         file_path = data.split(' ')[1].strip()
         file_path = os.path.join(session.cwd, file_path)
         print(f'File path: {file_path}')
+        client.send('150 Opening data connection.\n'.encode('utf-8'))
         try:
             # check transfer type first
             transfer_type = self.clients[client.getpeername()]['transfer_type']
