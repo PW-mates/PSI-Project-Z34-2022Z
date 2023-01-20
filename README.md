@@ -164,7 +164,7 @@ PASS cfbcfb
 221 Goodbye
 ```
 
-Use case 4:
+- Use case 4:
 
 Description: client sees list of files in current directory on local machine.
 Success: list is showed successfully.
@@ -178,7 +178,7 @@ test
 certs
 ```
 
-Use case 5:
+- Use case 5:
 
 Description: client creates a directory on local machine.
 Success: new directory is correctly created.
@@ -194,7 +194,7 @@ myfolder
 certs
 ```
 
-Use case 6: 
+- Use case 6: 
 Description: client changes directory and can see it on local machine.
 Success: directory is correctly changed.
 Exception: directory is not changed.
@@ -206,7 +206,7 @@ Result:
 /client/myfolder
 ```
 
-Use case 7: 
+- Use case 7: 
 Description: client views the contents of remote directory in passive mode.
 Success: list is showed successfully, firstly we have directory listening with code 150 and then see the content with code 226.
 Exception: list is not showed.
@@ -227,7 +227,7 @@ drwxr-xr-x 1 root     root     4096 Jan 20 21:40 ..
 226 Directory send OK.
 ```
 
-Use case 8: 
+- Use case 8: 
 Description: client creates a directory on remote machine in passive mode.
 Success: new directory is correctly created with code 257.
 Exception: new directory is not created.
@@ -240,7 +240,7 @@ MKD remote_folder
 257 Directory created.
 ```
 
-Use case 9: 
+- Use case 9: 
 Description: client changes remote directory and can see it.
 Success: directory is correctly changed with code 250 and see current directory with code 257.
 Exception: directory is not changed, direcotory name is incorrect.
@@ -266,7 +266,7 @@ CWD dfvdf
 550 Error changing directory
 ```
 
-Use case 10: 
+- Use case 10: 
 Description: client transports a file from local machine to remote machine in passive mode.
 Success: file is transported successfully with code 150.
 Exception: file is not transported.
@@ -295,8 +295,7 @@ drwxr-xr-x 3 ftp_user ftp_user 4096 Jan 20 22:44 ..
 226 Directory send OK.
 ```
 
-
-Use case 11: 
+- Use case 11: 
 Description: client renames a file on remote machine in passive mode.
 Success: file is successfully found with code 350 and correctly renamed with code 250.
 Exception: file is not renamed.
@@ -313,7 +312,7 @@ RNTO readme_renamed.txt
 250 File renamed.
 ```
 
-Use case 12: 
+- Use case 12: 
 Description: client downloades a file from remote machine to local machine.
 Success: file is downloaded correctly with code 150.
 Exception: file is not downloaded.
@@ -335,7 +334,7 @@ readme_renamed.txt
 readme.txt
 ```
 
-Use case 13: 
+- Use case 13: 
 Description: client removes a file on remote machine in passive mode.
 Success: file is correctly removed with code 250.
 Exception: file is not removed.
@@ -359,7 +358,7 @@ drwxr-xr-x 3 ftp_user ftp_user 4096 Jan 20 22:44 ..
 226 Directory send OK.
 ```
 
-Use case 14: 
+- Use case 14: 
 Description: client removes a directory on remote machine in passive mode.
 Success: directory is correctly removed with code 250.
 Exception: file is not removed.
@@ -386,7 +385,7 @@ drwxr-xr-x 1 root     root     4096 Jan 20 21:40 ..
 226 Directory send OK.
 ```
 
-Use case 15: 
+- Use case 15: 
 Description: two clients authenticate to one server in paralel mode.
 Success: both clients are authenticated successfully.
 Exception: clients are not authenticated.
@@ -415,7 +414,7 @@ PASS abcd
 230 Login successful
 ```
 
-Use case 16:
+- Use case 16:
 
 Description: sever works with both clients and have two folders for them.
 Success: we can see two folders of both clients in remote directory and both client view list of files successfully.
