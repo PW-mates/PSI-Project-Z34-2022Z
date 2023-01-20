@@ -231,28 +231,29 @@ class FTPServer:
                 try:
                     
                     context = ssl.SSLContext()
-                    # context.load_default_certs()
+                    context.load_default_certs()
                     ip = self.clients[client.getpeername()]['socket']['ip']
                     port = self.clients[client.getpeername()]['socket']['port']
                     print(f'Connecting to {ip}:{port}')
                     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-                    sock.bind(('', 20))
+                    # sock.bind(('', 20))
                     sock.settimeout(5)
-                    sock = context.wrap_socket(sock)
+                    if (self.clients[client.getpeername()]['auth_mode'] == 'TLS'):
+                        sock = context.wrap_socket(sock, do_handshake_on_connect=True)
                     sock.connect((ip, port))
                     
-                    # print('Connected to client: ', sock.getpeername())
-                    # try:
-                    #     sock.do_handshake()
-                    #     sock.send(output.encode('utf-8'))
-                    #     sock = sock.unwrap()
-                    # except Exception as e:
-                    #     print('Error sending data: ', str(e))
-                    #     return
-                    # finally:
-                    #     print("terminating connection")
-                    #     sock.shutdown(socket.SHUT_RDWR)
-                    #     sock.close()
+                    print('Connected to client: ', sock.getpeername())
+                    try:
+                        sock.send(output.encode('utf-8'))
+                        if (self.clients[client.getpeername()]['auth_mode'] == 'TLS'):
+                            sock = sock.unwrap()
+                    except Exception as e:
+                        print('Error sending data: ', str(e))
+                        return
+                    finally:
+                        print("terminating connection")
+                        sock.shutdown(socket.SHUT_RDWR)
+                        sock.close()
                 except Exception as e:
                     print('Error connecting to client: ', str(e))
                     return
@@ -337,7 +338,9 @@ class FTPServer:
                     if (self.clients[client.getpeername()]['auth_mode'] == 'TLS'):
                         conn = self.ssl_context.wrap_socket(conn, server_side=True)
                     try:
+                        print("Transfer type: ", transfer_type)
                         if (transfer_type == 'A'):
+                            print("Converting file data to bytes...")
                             try:
                                 file_data = bytes(file_data, 'utf-8')
                             except Exception as e:
@@ -352,29 +355,40 @@ class FTPServer:
                         conn.shutdown(socket.SHUT_RDWR)
                         conn.close()
                 elif (self.clients[client.getpeername()]['mode'] == 'active'):
-                    # try:
-                    #     context = ssl.SSLContext()
-                    #     # context.load_default_certs()
-                    #     ip = self.clients[client.getpeername()]['socket']['ip']
-                    #     port = self.clients[client.getpeername()]['socket']['port']
-                    #     print(f'Connecting to {ip}:{port}')
-                    #     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-                    #     sock.bind(('', 20))
-                    #     sock.settimeout(5)
-                    #     sock = context.wrap_socket(sock)
-                    #     sock.connect((ip, port))
-                    #     sock.send(file_data)
-                    #     sock = sock.unwrap()
-                    # except Exception as e:
-                    #     print('Error sending data: ', str(e))
-                    #     return
-                    # finally:
-                    #     print("terminating connection")
-                    #     sock.shutdown(socket.SHUT_RDWR)
-                    #     sock.close()
+                    try:
+                        context = ssl.SSLContext()
+                        # context.load_default_certs()
+                        ip = self.clients[client.getpeername()]['socket']['ip']
+                        port = self.clients[client.getpeername()]['socket']['port']
+                        print(f'Connecting to {ip}:{port}')
+                        sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+                        # sock.bind(('', 20))
+                        sock.settimeout(5)
+                        if (self.clients[client.getpeername()]['auth_mode'] == 'TLS'):
+                            sock = context.wrap_socket(sock)
+                        sock.connect((ip, port))
+                        if (transfer_type == 'A'):
+                            print("Converting file data to bytes...")
+                            try:
+                                file_data = bytes(file_data, 'utf-8')
+                            except Exception as e:
+                                print('Error converting file data to bytes: ', str(e))
+                                client.send('550 File is not support to transfer in ASCII mode\n'.encode('utf-8'))
+                                return
+                        sock.send(file_data)
+                        if (self.clients[client.getpeername()]['auth_mode'] == 'TLS'):
+                            sock = sock.unwrap()
+                        client.send('226 Transfer complete.\n'.encode('utf-8'))
+                    except Exception as e:
+                        print('Error sending data: ', str(e))
+                        return
+                    finally:
+                        print("terminating connection")
+                        sock.shutdown(socket.SHUT_RDWR)
+                        sock.close()
 
                     # method not supported
-                    client.send('502 Method not supported\n'.encode('utf-8'))
+                    # client.send('502 Method not supported\n'.encode('utf-8'))
                 else:
                     client.send('425 Use PORT or PASV first.\n'.encode('utf-8'))
                     return
@@ -418,33 +432,35 @@ class FTPServer:
                         conn.shutdown(socket.SHUT_RDWR)
                         conn.close()
                 elif (self.clients[client.getpeername()]['mode'] == 'active'):
-                    # try:
-                    #     context = ssl.SSLContext()
-                    #     # context.load_default_certs()
-                    #     ip = self.clients[client.getpeername()]['socket']['ip']
-                    #     port = self.clients[client.getpeername()]['socket']['port']
-                    #     print(f'Connecting to {ip}:{port}')
-                    #     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-                    #     sock.bind(('', 20))
-                    #     sock.settimeout(5)
-                    #     sock = context.wrap_socket(sock)
-                    #     sock.connect((ip, port))
-                    #     while True:
-                    #         data = sock.recv(1024)
-                    #         if not data:
-                    #             break
-                    #         file_data += data
-                    #     sock = sock.unwrap()
-                    # except Exception as e:
-                    #     print('Error receiving data: ', str(e))
-                    #     return
-                    # finally:
-                    #     print("terminating connection")
-                    #     sock.shutdown(socket.SHUT_RDWR)
-                    #     sock.close()
+                    try:
+                        context = ssl.SSLContext()
+                        # context.load_default_certs()
+                        ip = self.clients[client.getpeername()]['socket']['ip']
+                        port = self.clients[client.getpeername()]['socket']['port']
+                        print(f'Connecting to {ip}:{port}')
+                        sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+                        # sock.bind(('', 20))
+                        sock.settimeout(5)
+                        if (self.clients[client.getpeername()]['auth_mode'] == 'TLS'):
+                            sock = context.wrap_socket(sock)
+                        sock.connect((ip, port))
+                        while True:
+                            data = sock.recv(1024)
+                            if not data:
+                                break
+                            file_data += data
+                        if (self.clients[client.getpeername()]['auth_mode'] == 'TLS'):
+                            sock = sock.unwrap()
+                    except Exception as e:
+                        print('Error receiving data: ', str(e))
+                        return
+                    finally:
+                        print("terminating connection")
+                        sock.shutdown(socket.SHUT_RDWR)
+                        sock.close()
 
                     # method not supported
-                    client.send('502 Method not supported\n'.encode('utf-8'))
+                    # client.send('502 Method not supported\n'.encode('utf-8'))
                 else:
                     client.send('425 Use PORT or PASV first.\n'.encode('utf-8'))
                     return
