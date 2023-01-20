@@ -359,16 +359,16 @@ class FTPServer:
                         if (self.clients[client.getpeername()]['auth_mode'] == 'TLS'):
                             conn = self.ssl_context.wrap_socket(conn, server_side=True)
                         
-                            print("Transfer type: ", transfer_type)
-                            if (transfer_type == 'A'):
-                                print("Converting file data to bytes...")
-                                try:
-                                    file_data = bytes(file_data, 'utf-8')
-                                except Exception as e:
-                                    print('Error converting file data to bytes: ', str(e))
-                                    client.send('550 File is not support to transfer in ASCII mode\n'.encode('utf-8'))
-                                    return
-                            conn.send(file_data)
+                        print("Transfer type: ", transfer_type)
+                        if (transfer_type == 'A'):
+                            print("Converting file data to bytes...")
+                            try:
+                                file_data = bytes(file_data, 'utf-8')
+                            except Exception as e:
+                                print('Error converting file data to bytes: ', str(e))
+                                client.send('550 File is not support to transfer in ASCII mode\n'.encode('utf-8'))
+                                return
+                        conn.send(file_data)
                     finally:
                         print("terminating connection")
                         if (self.clients[client.getpeername()]['auth_mode'] == 'TLS'):
@@ -438,11 +438,11 @@ class FTPServer:
                 open_mode = 'w'
             with open(file_path, open_mode) as f:
                 if (self.clients[client.getpeername()]['mode'] == 'passive'):
-                    conn, addr = self.clients[client.getpeername()]['data_socket'].accept()
-                    print('Connection accepted: ', conn.getpeername())
-                    if (self.clients[client.getpeername()]['auth_mode'] == 'TLS'):
-                        conn = self.ssl_context.wrap_socket(conn, server_side=True)
                     try:
+                        conn, addr = self.clients[client.getpeername()]['data_socket'].accept()
+                        print('Connection accepted: ', conn.getpeername())
+                        if (self.clients[client.getpeername()]['auth_mode'] == 'TLS'):
+                            conn = self.ssl_context.wrap_socket(conn, server_side=True)
                         while True:
                             data = conn.recv(1024)
                             if not data:
