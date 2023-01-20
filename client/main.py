@@ -4,9 +4,8 @@ import ssl
 import os
 
 # Initialze socket
-TCP_IP = "0.0.0.0"
 TCP_PORT = 21
-global TCP_PORT_PASV, TCP_PORT_ACTIVE, PASV_MODE, ACTIVE_MODE, TYPE_MODE, context, client_socket
+TCP_IP = "0.0.0.0"
 TCP_PORT_PASV = None
 TCP_PORT_ACTIVE = None
 PASV_MODE = True
@@ -19,7 +18,7 @@ def listen_data():
     global TCP_PORT_PASV
     global TCP_PORT_ACTIVE
     global context
-    global client_socket
+    global client_socket, client_socket_tmp
     port = None
     if PASV_MODE:
         port = TCP_PORT_PASV
@@ -27,14 +26,12 @@ def listen_data():
         port = TCP_PORT_ACTIVE
     if port is None:
         return None, None
-    client_socket_tmp = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    if context is not None:
+    if context is not None and PASV_MODE:
         client_socket_tmp = context.wrap_socket(client_socket_tmp, server_hostname=TCP_IP)
     if ACTIVE_MODE:
-        client_socket_tmp.bind(("0.0.0.0", port))
-        client_socket_tmp.listen(1)
         client_socket_tmp, _ = client_socket_tmp.accept()
     else:
+        client_socket_tmp = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         client_socket_tmp.connect((TCP_IP, port))
     data = client_socket_tmp.recv(1024).decode()
     if context is not None:
@@ -48,6 +45,7 @@ def listen_data():
     return data, response
 
 def send_data(data):
+    global client_socket_tmp
     global TCP_PORT_PASV
     global TCP_PORT_ACTIVE
     global context
@@ -59,14 +57,12 @@ def send_data(data):
         port = TCP_PORT_ACTIVE
     if port is None:
         return None, None
-    client_socket_tmp = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    if context is not None:
+    if context is not None and PASV_MODE:
         client_socket_tmp = context.wrap_socket(client_socket_tmp, server_hostname=TCP_IP)
     if ACTIVE_MODE:
-        client_socket_tmp.bind(("0.0.0.0", port))
-        client_socket_tmp.listen(1)
         client_socket_tmp, _ = client_socket_tmp.accept()
     else:
+        client_socket_tmp = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         client_socket_tmp.connect((TCP_IP, port))
     client_socket_tmp.send(data)
     if context is not None:
@@ -250,7 +246,7 @@ def type(type):
 
 # Command: PORT
 def port():
-    global TCP_PORT_ACTIVE, PASV_MODE, ACTIVE_MODE
+    global TCP_PORT_ACTIVE, PASV_MODE, ACTIVE_MODE, client_socket_tmp
     PASV_MODE = False
     ACTIVE_MODE = True
     TCP_PORT_ACTIVE = random.randint(1024, 65535)
@@ -264,6 +260,13 @@ def port():
     port = ','.join(port)
     command = 'PORT {},{}\r\n'.format(ip, port)
     send_command(command)
+
+    client_socket_tmp = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    if context is not None:
+        client_socket_tmp = context.wrap_socket(client_socket_tmp, server_hostname=TCP_IP)
+
+    client_socket_tmp.bind(("0.0.0.0", TCP_PORT_ACTIVE))
+    client_socket_tmp.listen(1)
 
 # Command: PASV
 def pasv():
@@ -332,6 +335,7 @@ def help():
 
 print("Welcome to FTP client")
 print("Type HELP for a list of commands")
+
 while True:
     try:
         command = input("\n> ").split()
@@ -372,13 +376,10 @@ while True:
         elif command[0] == "pwd":
             print(os.getcwd())
         elif command[0] == "ls":
-            cwd = os.getcwd()
-            for file in os.listdir(cwd):
+            for file in os.listdir(os.getcwd()):
                 print(file)
         elif command[0] == "cd":
-            cwd = os.getcwd()
             os.chdir(command[1])
-            cwd = os.getcwd()
         elif command[0] == "mkdir":
             os.mkdir(command[1])
         elif command[0] == "QUIT":
