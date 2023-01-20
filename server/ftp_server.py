@@ -137,6 +137,16 @@ class FTPServer:
         del self.clients[client.getpeername()]
         raise Exception('Client disconnected')
     
+    def close_data_connection(self, client):
+        data_socket = self.clients[client.getpeername()]['data_socket']
+        if (data_socket):
+            if (self.clients[client.getpeername()]['auth_mode'] == 'TLS'):
+                data_socket = data_socket.unwrap()
+            data_socket.close()
+            self.clients[client.getpeername()]['data_socket'] = None
+            print('Data connection closed')
+        
+    
     def cmd_auth(self, client, data):
         print('Setting authentication mode...')
         mode = data.split(' ')[1].strip()
@@ -228,6 +238,7 @@ class FTPServer:
                     print("terminating connection")
                     conn.shutdown(socket.SHUT_RDWR)
                     conn.close()
+                    self.close_data_connection(client)
             elif (self.clients[client.getpeername()]['mode'] == 'active'):
                 try:
                     
@@ -255,6 +266,9 @@ class FTPServer:
                         print("terminating connection")
                         sock.shutdown(socket.SHUT_RDWR)
                         sock.close()
+                except socket.timeout:
+                    print('Connection timed out')
+                    return
                 except Exception as e:
                     print('Error connecting to client: ', str(e))
                     return
@@ -298,6 +312,7 @@ class FTPServer:
         # random socket port between 65000 and 65535
         port = random.randint(65000, 65535)
         sock.bind((self.host, port))
+        sock.settimeout(5)
         sock.listen(1)
         self.clients[client.getpeername()]['data_socket'] = sock
         ip, port = sock.getsockname()
@@ -363,6 +378,7 @@ class FTPServer:
                         print("terminating connection")
                         conn.shutdown(socket.SHUT_RDWR)
                         conn.close()
+                        self.close_data_connection(client)
                 elif (self.clients[client.getpeername()]['mode'] == 'active'):
                     try:
                         context = ssl.SSLContext()
@@ -403,6 +419,9 @@ class FTPServer:
                     return
                 client.send('226 Transfer complete.\n'.encode('utf-8'))
                 print('Done sending file')
+        except socket.timeout:
+            print('Connection timed out')
+            return
         except Exception as e:
             print('Error sending file: ', str(e))
             client.send('550 Error sending file\n'.encode('utf-8'))
@@ -446,6 +465,7 @@ class FTPServer:
                         print("terminating connection")
                         conn.shutdown(socket.SHUT_RDWR)
                         conn.close()
+                        self.close_data_connection(client)
                 elif (self.clients[client.getpeername()]['mode'] == 'active'):
                     try:
                         context = ssl.SSLContext()
@@ -491,6 +511,9 @@ class FTPServer:
                 os.chown(file_path, self.clients[client.getpeername()]['session'].user.uid, self.clients[client.getpeername()]['session'].user.gid)
 
                 print('Done storing file')
+        except socket.timeout:
+            print('Connection timed out')
+            return
         except Exception as e:
             print('Error storing file: ', str(e))
             client.send('550 Error storing file\n'.encode('utf-8'))
