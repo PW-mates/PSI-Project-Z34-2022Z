@@ -1,2 +1,0 @@
-root;root;rw;/
-user;user;r;/Users/mcong/PSI-Project-Z34-2022Z
