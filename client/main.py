@@ -1,22 +1,26 @@
 import random
 import socket
+import ssl
 
 # Initialze socket
 # TCP_IP = "127.0.0.1"
 TCP_IP = "103.130.212.186"
+# TCP_IP = "0.0.0.0"
 TCP_PORT = 21
-global TCP_PORT_PASV, TCP_PORT_ACTIVE, PASV_MODE, ACTIVE_MODE, TYPE_MODE, BUFFER_SIZE
+global TCP_PORT_PASV, TCP_PORT_ACTIVE, PASV_MODE, ACTIVE_MODE, TYPE_MODE, context, client_socket
 TCP_PORT_PASV = None
 TCP_PORT_ACTIVE = None
 PASV_MODE = True
 ACTIVE_MODE = False
-BUFFER_SIZE = 1024
 TYPE_MODE = 'I'
 client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+context = None
 
 def listen_data():
     global TCP_PORT_PASV
     global TCP_PORT_ACTIVE
+    global context
+    global client_socket
     port = None
     if PASV_MODE:
         port = TCP_PORT_PASV
@@ -25,8 +29,17 @@ def listen_data():
     if port is None:
         return None, None
     client_socket_tmp = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    client_socket_tmp.connect((TCP_IP, port))
+    if context is not None:
+        client_socket_tmp = context.wrap_socket(client_socket_tmp, server_hostname=TCP_IP)
+    if ACTIVE_MODE:
+        client_socket_tmp.bind(("0.0.0.0", port))
+        client_socket_tmp.listen(1)
+        client_socket_tmp, _ = client_socket_tmp.accept()
+    else:
+        client_socket_tmp.connect((TCP_IP, port))
     data = client_socket_tmp.recv(1024).decode()
+    if context is not None:
+        client_socket_tmp.unwrap()
     client_socket_tmp.close()
     # print("\n" + response)
     response = client_socket.recv(1024).decode()
@@ -38,6 +51,8 @@ def listen_data():
 def send_data(data):
     global TCP_PORT_PASV
     global TCP_PORT_ACTIVE
+    global context
+    global client_socket
     port = None
     if PASV_MODE:
         port = TCP_PORT_PASV
@@ -46,8 +61,17 @@ def send_data(data):
     if port is None:
         return None, None
     client_socket_tmp = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    client_socket_tmp.connect((TCP_IP, port))
+    if context is not None:
+        client_socket_tmp = context.wrap_socket(client_socket_tmp, server_hostname=TCP_IP)
+    if ACTIVE_MODE:
+        client_socket_tmp.bind(("0.0.0.0", port))
+        client_socket_tmp.listen(1)
+        client_socket_tmp, _ = client_socket_tmp.accept()
+    else:
+        client_socket_tmp.connect((TCP_IP, port))
     client_socket_tmp.send(data)
+    if context is not None:
+        client_socket_tmp.unwrap()
     client_socket_tmp.close()
     response = client_socket.recv(1024).decode()
     TCP_PORT_PASV = None
@@ -56,6 +80,7 @@ def send_data(data):
 
 # Send command to server
 def send_command(command):
+    print(command)
     client_socket.send(command.encode())
     response = client_socket.recv(1024).decode()
     print("\n" + response)
@@ -118,6 +143,8 @@ def cwd(directory):
 def quit():
     command = 'QUIT\r\n'
     send_command(command)
+    if context is not None:
+        client_socket.unwrap()
     client_socket.close()
     print("\nConnection closed")
     return
@@ -252,18 +279,30 @@ def pasv():
     port = int(val[4]) * 256 + int(val[5])
     TCP_PORT_PASV = port
 
-# Function to switch between active and passive mode
+# Function to switch to passive mode
 def passive_mode():
     global ACTIVE_MODE, PASV_MODE
     PASV_MODE = True
     ACTIVE_MODE = False
     print("\nPassive mode activated")
 
+# Function to switch to active mode
 def active_mode():
     global ACTIVE_MODE, PASV_MODE
     ACTIVE_MODE = True
     PASV_MODE = False
     print("\nActive mode activated")
+
+# AUTH TLS command
+def auth_tls():
+    command = 'AUTH TLS\r\n'
+    response = send_command(command)
+    if response.startswith('234'):
+        global context, client_socket
+        context = ssl.create_default_context()
+        context.load_verify_locations('certs/server.pem')
+        context.check_hostname = False
+        client_socket = context.wrap_socket(client_socket, server_hostname=TCP_IP)
 
 # Command: HELP
 def help():
@@ -271,6 +310,7 @@ def help():
     print("CONNECT - Connect to server")
     print("USER <username> - Send username")
     print("PASS <password> - Send password")
+    print("AUTH TLS - Switch to TLS mode")
     print("PWD - Print working directory")
     print("LIST - List files in current directory")
     print("CWD <directory> - Change working directory")
@@ -293,11 +333,15 @@ while True:
     try:
         command = input("\n> ").split()
         if command[0] == "CONNECT":
+            if len(command) == 2:
+                TCP_IP = command[1]
             connect()
         elif command[0] == "USER":
             user(command[1])
         elif command[0] == "PASS":
             passwd(command[1])
+        elif command[0] == "AUTH":
+            auth_tls()
         elif command[0] == "PWD":
             pwd()
         elif command[0] == "LIST":
