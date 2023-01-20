@@ -4,9 +4,7 @@ import ssl
 import os
 
 # Initialze socket
-# TCP_IP = "127.0.0.1"
-TCP_IP = "103.130.212.186"
-# TCP_IP = "0.0.0.0"
+TCP_IP = "0.0.0.0"
 TCP_PORT = 21
 global TCP_PORT_PASV, TCP_PORT_ACTIVE, PASV_MODE, ACTIVE_MODE, TYPE_MODE, context, client_socket
 TCP_PORT_PASV = None
