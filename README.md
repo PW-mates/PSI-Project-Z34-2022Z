@@ -104,8 +104,8 @@ To run our clients on local machine we type command `python3 main.py` being in /
 
 - Use case 1:
 
-Description: We run client side with command written before.
-Success: program starts and we see first welcome message.
+Description: We run client side with command written before.  
+Success: program starts and we see first welcome message.  
 Exception: program does not start and error is showing.  
  
 Result:
@@ -117,10 +117,10 @@ Type HELP for a list of commands
 
 - Use case 2:
 
-Description: client connects to the server on the local machine.
-Success: clients connects successfully and have message with code 220.
-Exception: clients can not connect to server, because of internet connection or server does not work.
-Precondition: client and server have internet connection.
+Description: client connects to the server on the local machine.  
+Success: clients connects successfully and have message with code 220.  
+Exception: clients can not connect to server, because of internet connection or server does not work.  
+Precondition: client and server have internet connection.  
 
 Result: 
 ```
@@ -133,9 +133,9 @@ Binary mode activated by default
 
 - Use case 3:
 
-Description: client authenticates with the server using a valid username and password.
-Success: user authenticates successfully and gets message with code 230.
-Exception: user can not authenticate, login or password is incorrect, so it is shown message with code 530 about refusal authentication and code 221. 
+Description: client authenticates with the server using a valid username and password.  
+Success: user authenticates successfully and gets message with code 230.  
+Exception: user can not authenticate, login or password is incorrect, so it is shown message with code 530 about refusal authentication and code 221.   
 
 Result with success: 
 ```
@@ -166,9 +166,9 @@ PASS cfbcfb
 
 - Use case 4:
 
-Description: client sees list of files in current directory on local machine.
-Success: list is showed successfully.
-Exception: list is not showing.
+Description: client sees list of files in current directory on local machine.  
+Success: list is showed successfully.  
+Exception: list is not showing.  
 
 Result: 
 ```
@@ -178,11 +178,11 @@ test
 certs
 ```
 
-- Use case 5:
+- Use case 5:  
 
-Description: client creates a directory on local machine.
-Success: new directory is correctly created.
-Exception: new directory is not created.
+Description: client creates a directory on local machine.  
+Success: new directory is correctly created.  
+Exception: new directory is not created.  
 
 Result: 
 ```
@@ -194,10 +194,11 @@ myfolder
 certs
 ```
 
-- Use case 6: 
-Description: client changes directory and can see it on local machine.
-Success: directory is correctly changed.
-Exception: directory is not changed.
+- Use case 6:   
+
+Description: client changes directory and can see it on local machine.  
+Success: directory is correctly changed.  
+Exception: directory is not changed.  
 
 Result: 
 ```
@@ -206,10 +207,11 @@ Result:
 /client/myfolder
 ```
 
-- Use case 7: 
-Description: client views the contents of remote directory in passive mode.
-Success: list is showed successfully, firstly we have directory listening with code 150 and then see the content with code 226.
-Exception: list is not showed.
+- Use case 7:   
+
+Description: client views the contents of remote directory in passive mode.  
+Success: list is showed successfully, firstly we have directory listening with code 150 and then see the content with code 226.  
+Exception: list is not showed.  
 
 Result: 
 ```
@@ -227,10 +229,11 @@ drwxr-xr-x 1 root     root     4096 Jan 20 21:40 ..
 226 Directory send OK.
 ```
 
-- Use case 8: 
-Description: client creates a directory on remote machine in passive mode.
-Success: new directory is correctly created with code 257.
-Exception: new directory is not created.
+- Use case 8:   
+
+Description: client creates a directory on remote machine in passive mode.  
+Success: new directory is correctly created with code 257.  
+Exception: new directory is not created.  
 
 Result: 
 ```
@@ -241,9 +244,10 @@ MKD remote_folder
 ```
 
 - Use case 9: 
-Description: client changes remote directory and can see it.
-Success: directory is correctly changed with code 250 and see current directory with code 257.
-Exception: directory is not changed, direcotory name is incorrect.
+
+Description: client changes remote directory and can see it.    
+Success: directory is correctly changed with code 250 and see current directory with code 257.  
+Exception: directory is not changed, direcotory name is incorrect.  
 
 Result: 
 ```
@@ -266,10 +270,11 @@ CWD dfvdf
 550 Error changing directory
 ```
 
-- Use case 10: 
-Description: client transports a file from local machine to remote machine in passive mode.
-Success: file is transported successfully with code 150.
-Exception: file is not transported.
+- Use case 10:  
+
+Description: client transports a file from local machine to remote machine in passive mode.  
+Success: file is transported successfully with code 150.  
+Exception: file is not transported.  
 
 Result: 
 ```
@@ -296,9 +301,10 @@ drwxr-xr-x 3 ftp_user ftp_user 4096 Jan 20 22:44 ..
 ```
 
 - Use case 11: 
-Description: client renames a file on remote machine in passive mode.
-Success: file is successfully found with code 350 and correctly renamed with code 250.
-Exception: file is not renamed.
+
+Description: client renames a file on remote machine in passive mode.  
+Success: file is successfully found with code 350 and correctly renamed with code 250.  
+Exception: file is not renamed.  
 
 Result: 
 ```
@@ -313,9 +319,10 @@ RNTO readme_renamed.txt
 ```
 
 - Use case 12: 
-Description: client downloades a file from remote machine to local machine.
-Success: file is downloaded correctly with code 150.
-Exception: file is not downloaded.
+
+Description: client downloades a file from remote machine to local machine.  
+Success: file is downloaded correctly with code 150.  
+Exception: file is not downloaded.  
 
 Result: 
 ```
@@ -335,9 +342,10 @@ readme.txt
 ```
 
 - Use case 13: 
-Description: client removes a file on remote machine in passive mode.
-Success: file is correctly removed with code 250.
-Exception: file is not removed.
+
+Description: client removes a file on remote machine in passive mode.  
+Success: file is correctly removed with code 250.  
+Exception: file is not removed.  
 
 Result: 
 ```
@@ -359,9 +367,10 @@ drwxr-xr-x 3 ftp_user ftp_user 4096 Jan 20 22:44 ..
 ```
 
 - Use case 14: 
-Description: client removes a directory on remote machine in passive mode.
-Success: directory is correctly removed with code 250.
-Exception: file is not removed.
+
+Description: client removes a directory on remote machine in passive mode.  
+Success: directory is correctly removed with code 250.  
+Exception: file is not removed.  
 
 Result: 
 ```
@@ -386,9 +395,10 @@ drwxr-xr-x 1 root     root     4096 Jan 20 21:40 ..
 ```
 
 - Use case 15: 
-Description: two clients authenticate to one server in paralel mode.
-Success: both clients are authenticated successfully.
-Exception: clients are not authenticated.
+
+Description: two clients authenticate to one server in paralel mode.  
+Success: both clients are authenticated successfully.  
+Exception: clients are not authenticated.  
 
 Result: 
 ```
@@ -416,9 +426,9 @@ PASS abcd
 
 - Use case 16:
 
-Description: sever works with both clients and have two folders for them.
-Success: we can see two folders of both clients in remote directory and both client view list of files successfully.
-Exception: server does not work with two clients in paralel.
+Description: sever works with both clients and have two folders for them.  
+Success: we can see two folders of both clients in remote directory and both client view list of files successfully.  
+Exception: server does not work with two clients in paralel.  
 
 Result: 
 ```
