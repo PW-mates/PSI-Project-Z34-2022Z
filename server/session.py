@@ -1,6 +1,8 @@
 from utils import get_user, demote, login
 import subprocess
-import os
+import os, pwd
+
+os.getlogin = lambda: pwd.getpwuid(os.getuid())[0]
 
 class Session:
     def __init__(self, user = None, password = None):
@@ -76,7 +78,7 @@ class Session:
         if not self.check_run_as_root():
             print('Please run this command as root')
             return False
-        output, error  = self.run(f'/usr/sbin/useradd -m -d /home/{username} -p {password} -s /bin/bash {username}', 'utf-8')
+        output, error  = self.run(f'/usr/sbin/useradd -m -d /home/{username} -s /bin/bash {username} -p {password}', True)
         if output:
             print('output: ', output)
         if error:

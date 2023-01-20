@@ -1,10 +1,26 @@
 # Create a FTP server from scratch
-
 import os
 import threading
 from ftp_server import FTPServer, FTPUser
+from session import Session
+from utils import get_user
 
 def main():
+    # create a FTP User if it doesn't exist
+    username = 'ftp_user'
+    user = get_user(username)
+    if (user is None):
+        password = '$y$j9T$s5tx/LtsbzvLC8gJ9Mos2/$6fOlBz8DIeRvdFGmLDPof6Zsy7GaCC6y2mfPU5XWiY8'
+        su_session = Session()
+        try:
+            su_session.create_ftp_user(username, password)
+            print(f'Created user {username} with password "abcd"')
+        except Exception as e:
+            print('Exception: ', e)
+            return
+        
+
+
     host = '0.0.0.0'
     port = 21
     # get full path to server.crt and server.key
@@ -19,13 +35,7 @@ def main():
     server_thread.start()
 
 
-    # user = get_user('ftp_user')
-    # if (user is None):
-    #     raise Exception('User not found')
-    # su_session = Session(user, "abcd")
 
-    # # su_session.create_ftp_user('ftp_user3', 'password')
-    # print('su_session.authenticated: ', su_session.authenticated)
 
 
 if __name__ == '__main__':

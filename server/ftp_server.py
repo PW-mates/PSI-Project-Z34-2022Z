@@ -1,4 +1,5 @@
 import os
+import random
 import sys
 import socket
 import threading
@@ -294,7 +295,9 @@ class FTPServer:
         print('Setting passive mode...')
         self.clients[client.getpeername()]['mode'] = 'passive'
         sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        sock.bind((self.host, 0))
+        # random socket port between 65000 and 65535
+        port = random.randint(65000, 65535)
+        sock.bind((self.host, port))
         sock.listen(1)
         self.clients[client.getpeername()]['data_socket'] = sock
         ip, port = sock.getsockname()
