@@ -8,12 +8,37 @@
 
 ### Scope of implementation:
 
-- The client and server should be able to handle the basic FTP commands (e.g. USER, PASS, PORT, RETR, STOR)
+- The client and server should be able to handle the basic FTP commands:
+```
+Commands:
+CONNECT - Connect to server
+USER <username> - Send username
+PASS <password> - Send password
+AUTH TLS - Switch to TLS mode
+PWD - Print working directory
+LIST - List files in current directory
+CWD <directory> - Change working directory
+RETR <filename> - Download file
+STOR <filename> - Upload file
+DELE <filename> - Delete file
+MKD <directory> - Create directory
+RMD <directory> - Remove directory
+REN <old_name> <new_name> - Rename file
+TYPE <type> - Set transfer type
+PASV - Switch to passive mode
+PORT - Switch to active mode
+ls - List files in current directory on local machine
+cd <directory> - Change directory on local machine
+pwd - Print working directory on local machine
+mkdir <directory> - Create directory on local machine
+QUIT - Close connection
+HELP - Print help message
+```
 - The client should be able to display the contents of local and remote directories, and navigate through them
 - The client should support both active and passive modes
 - The client should support both binary and text modes
 - The server should support concurrent connections from multiple clients
-- The client and server should support a selected confidentiality mechanism (e.g. FTP/SSL, SFTP)
+- The client and server should support a selected confidentiality mechanism (FTP)
 
 ### Use cases:
 
@@ -36,7 +61,7 @@
 ### Error handling:
 
 - The client and server should gracefully handle invalid or unexpected input from the user or the other side of the connection
-- The client and server should handle errors that occur during file transfers (e.g. connection timeout, file not found)
+- The client and server should handle errors that occur during file transfers (connection timeout, file not found)
 - The client and server should handle errors that occur due to insufficient permissions or other authorization issues
 
 ### Test cases:

@@ -1,11 +1,10 @@
 import random
 import socket
 import ssl
+import os
 
 # Initialze socket
-# TCP_IP = "127.0.0.1"
-TCP_IP = "103.130.212.186"
-# TCP_IP = "0.0.0.0"
+TCP_IP = "0.0.0.0"
 TCP_PORT = 21
 global TCP_PORT_PASV, TCP_PORT_ACTIVE, PASV_MODE, ACTIVE_MODE, TYPE_MODE, context, client_socket
 TCP_PORT_PASV = None
@@ -167,7 +166,7 @@ def retr(filepath):
         try:
             if TYPE_MODE == "I":
                 data = data.encode()
-            with open(filepath, mode) as f:
+            with open(os.getcwd() + '/' + filepath, mode) as f:
                 f.write(data)
         except:
             print("Error writing file with mode: " + mode)
@@ -185,7 +184,7 @@ def stor(filepath):
         mode = 'rb'
     data = None
     try:
-        with open(filepath, mode) as f:
+        with open(os.getcwd() + '/' + filepath, mode) as f:
             data = f.read()
     # catch file not found error, read error and return
     except FileNotFoundError:
@@ -323,6 +322,10 @@ def help():
     print("TYPE <type> - Set transfer type")
     print("PASV - Switch to passive mode")
     print("PORT - Switch to active mode")
+    print("ls - List files in current directory on local machine")
+    print("cd <directory> - Change directory on local machine")
+    print("pwd - Print working directory on local machine")
+    print("mkdir <directory> - Create directory on local machine")
     print("QUIT - Close connection")
     print("HELP - Print this message")
 
@@ -366,6 +369,18 @@ while True:
             ren(command[1], command[2])
         elif command[0] == "TYPE":
             type(command[1])
+        elif command[0] == "pwd":
+            print(os.getcwd())
+        elif command[0] == "ls":
+            cwd = os.getcwd()
+            for file in os.listdir(cwd):
+                print(file)
+        elif command[0] == "cd":
+            cwd = os.getcwd()
+            os.chdir(command[1])
+            cwd = os.getcwd()
+        elif command[0] == "mkdir":
+            os.mkdir(command[1])
         elif command[0] == "QUIT":
             quit()
             break
