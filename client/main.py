@@ -31,7 +31,6 @@ def listen_data():
     if ACTIVE_MODE:
         client_socket_tmp, _ = client_socket_tmp.accept()
     else:
-        client_socket_tmp = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         client_socket_tmp.connect((TCP_IP, port))
     data = client_socket_tmp.recv(1024).decode()
     if context is not None:
@@ -62,7 +61,6 @@ def send_data(data):
     if ACTIVE_MODE:
         client_socket_tmp, _ = client_socket_tmp.accept()
     else:
-        client_socket_tmp = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         client_socket_tmp.connect((TCP_IP, port))
     client_socket_tmp.send(data)
     if context is not None:
@@ -270,7 +268,7 @@ def port():
 
 # Command: PASV
 def pasv():
-    global TCP_PORT_PASV
+    global TCP_PORT_PASV, client_socket_tmp
     command = 'PASV\r\n'
     client_socket.send(command.encode())
     response = client_socket.recv(1024).decode()
@@ -280,6 +278,7 @@ def pasv():
     val = response.split('(')[-1].split(')')[0].split(',')
     port = int(val[4]) * 256 + int(val[5])
     TCP_PORT_PASV = port
+    client_socket_tmp = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
 # Function to switch to passive mode
 def passive_mode():
@@ -389,6 +388,6 @@ while True:
             help()
         else:
             print("Invalid command. Type HELP for a list of commands")
-            # doElse(' '.join(command))
+            
     except Exception as e:
         print(e)
