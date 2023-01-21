@@ -263,6 +263,8 @@ def port():
     if context is not None:
         client_socket_tmp = context.wrap_socket(client_socket_tmp, server_hostname=TCP_IP)
 
+    if TCP_IP == "127.0.0.1":
+        client_socket_tmp.bind(("127.0.0.1", TCP_PORT_ACTIVE))
     client_socket_tmp.bind(("0.0.0.0", TCP_PORT_ACTIVE))
     client_socket_tmp.listen(1)
 
