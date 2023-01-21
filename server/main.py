@@ -8,12 +8,14 @@ from utils import get_user
 def main():
     # create a FTP User if it doesn't exist
     username = 'ftp_user'
+    username2 = 'ftp_user2'
     user = get_user(username)
     if (user is None):
         password = '$y$j9T$s5tx/LtsbzvLC8gJ9Mos2/$6fOlBz8DIeRvdFGmLDPof6Zsy7GaCC6y2mfPU5XWiY8'
         su_session = Session()
         try:
             su_session.create_ftp_user(username, password)
+            su_session.create_ftp_user(username2, password)
             print(f'Created user {username} with password "abcd"')
         except Exception as e:
             print('Exception: ', e)

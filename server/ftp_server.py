@@ -224,13 +224,14 @@ class FTPServer:
             print(output)
             if (self.clients[client.getpeername()]['mode'] == 'passive'):
                 print('Waiting for connection...')
-                conn, addr = self.clients[client.getpeername()]['data_socket'].accept()
-                print("Current auth mode: ", self.clients[client.getpeername()]['auth_mode'])
-                if (self.clients[client.getpeername()]['auth_mode'] == 'TLS'):
-                    
-                    conn = self.ssl_context.wrap_socket(conn, server_side=True)
-                print('Connection accepted: ', conn.getpeername())
                 try:
+                    conn, addr = self.clients[client.getpeername()]['data_socket'].accept()
+                    print("Current auth mode: ", self.clients[client.getpeername()]['auth_mode'])
+                    if (self.clients[client.getpeername()]['auth_mode'] == 'TLS'):
+                        
+                        conn = self.ssl_context.wrap_socket(conn, server_side=True)
+                    print('Connection accepted: ', conn.getpeername())
+                
                     conn.send(output.encode('utf-8'))
                     if (self.clients[client.getpeername()]['auth_mode'] == 'TLS'):
                         conn = conn.unwrap()
@@ -241,34 +242,29 @@ class FTPServer:
                     self.close_data_connection(client)
             elif (self.clients[client.getpeername()]['mode'] == 'active'):
                 try:
-                    
-                    context = ssl.SSLContext()
-                    context.load_default_certs()
-                    ip = self.clients[client.getpeername()]['socket']['ip']
-                    port = self.clients[client.getpeername()]['socket']['port']
-                    print(f'Connecting to {ip}:{port}')
-                    sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-                    # sock.bind(('', 20))
-                    sock.settimeout(5)
-                    if (self.clients[client.getpeername()]['auth_mode'] == 'TLS'):
-                        sock = context.wrap_socket(sock, do_handshake_on_connect=True)
-                    sock.connect((ip, port))
-                    
-                    print('Connected to client: ', sock.getpeername())
                     try:
-                        sock.send(output.encode('utf-8'))
+                        context = ssl.SSLContext()
+                        context.load_default_certs()
+                        ip = self.clients[client.getpeername()]['socket']['ip']
+                        port = self.clients[client.getpeername()]['socket']['port']
+                        print(f'Connecting to {ip}:{port}')
+                        sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+                        # sock.bind(('', 20))
+                        sock.settimeout(5)
                         if (self.clients[client.getpeername()]['auth_mode'] == 'TLS'):
-                            sock = sock.unwrap()
+                            sock = context.wrap_socket(sock, do_handshake_on_connect=True)
+                        sock.connect((ip, port))
+                        print('Connected to client: ', sock.getpeername())
+                        sock.send(output.encode('utf-8'))
                     except Exception as e:
                         print('Error sending data: ', str(e))
                         return
                     finally:
                         print("terminating connection")
+                        if (self.clients[client.getpeername()]['auth_mode'] == 'TLS'):
+                            sock = sock.unwrap()
                         sock.shutdown(socket.SHUT_RDWR)
                         sock.close()
-                except socket.timeout:
-                    print('Connection timed out')
-                    return
                 except Exception as e:
                     print('Error connecting to client: ', str(e))
                     return
@@ -279,7 +275,7 @@ class FTPServer:
             print('Done listing files')
         except Exception as e:
             print('Error listing files: ', str(e))
-            client.send(f'550 Error listing files\n'.encode('utf-8'))
+            client.send(f'550 Error listing files {str(e)}\n'.encode('utf-8'))
     
     def cmd_syst(self, client, data):
         print('Sending system info...')
@@ -357,11 +353,12 @@ class FTPServer:
             with open(file_path, open_mode) as f:
                 file_data = f.read()
                 if (self.clients[client.getpeername()]['mode'] == 'passive'):
-                    conn, addr = self.clients[client.getpeername()]['data_socket'].accept()
-                    print('Connection accepted: ', conn.getpeername())
-                    if (self.clients[client.getpeername()]['auth_mode'] == 'TLS'):
-                        conn = self.ssl_context.wrap_socket(conn, server_side=True)
                     try:
+                        conn, addr = self.clients[client.getpeername()]['data_socket'].accept()
+                        print('Connection accepted: ', conn.getpeername())
+                        if (self.clients[client.getpeername()]['auth_mode'] == 'TLS'):
+                            conn = self.ssl_context.wrap_socket(conn, server_side=True)
+                        
                         print("Transfer type: ", transfer_type)
                         if (transfer_type == 'A'):
                             print("Converting file data to bytes...")
@@ -372,10 +369,10 @@ class FTPServer:
                                 client.send('550 File is not support to transfer in ASCII mode\n'.encode('utf-8'))
                                 return
                         conn.send(file_data)
-                        if (self.clients[client.getpeername()]['auth_mode'] == 'TLS'):
-                            conn = conn.unwrap()
                     finally:
                         print("terminating connection")
+                        if (self.clients[client.getpeername()]['auth_mode'] == 'TLS'):
+                            conn = conn.unwrap()
                         conn.shutdown(socket.SHUT_RDWR)
                         conn.close()
                         self.close_data_connection(client)
@@ -441,11 +438,11 @@ class FTPServer:
                 open_mode = 'w'
             with open(file_path, open_mode) as f:
                 if (self.clients[client.getpeername()]['mode'] == 'passive'):
-                    conn, addr = self.clients[client.getpeername()]['data_socket'].accept()
-                    print('Connection accepted: ', conn.getpeername())
-                    if (self.clients[client.getpeername()]['auth_mode'] == 'TLS'):
-                        conn = self.ssl_context.wrap_socket(conn, server_side=True)
                     try:
+                        conn, addr = self.clients[client.getpeername()]['data_socket'].accept()
+                        print('Connection accepted: ', conn.getpeername())
+                        if (self.clients[client.getpeername()]['auth_mode'] == 'TLS'):
+                            conn = self.ssl_context.wrap_socket(conn, server_side=True)
                         while True:
                             data = conn.recv(1024)
                             if not data:
