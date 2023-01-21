@@ -249,6 +249,10 @@ def port():
     ACTIVE_MODE = True
     TCP_PORT_ACTIVE = random.randint(1024, 65535)
     ip = socket.gethostbyname(socket.gethostname())
+    if TCP_IP == "0.0.0.0":
+        ip = "0.0.0.0"
+    elif TCP_IP == "127.0.0.1":
+        ip = "127.0.0.1"
     ip = ip.split('.')
     ip = ','.join(ip)
     # Convert the port from int to 2 port data
@@ -263,8 +267,6 @@ def port():
     if context is not None:
         client_socket_tmp = context.wrap_socket(client_socket_tmp, server_hostname=TCP_IP)
 
-    if TCP_IP == "127.0.0.1":
-        client_socket_tmp.bind(("127.0.0.1", TCP_PORT_ACTIVE))
     client_socket_tmp.bind(("0.0.0.0", TCP_PORT_ACTIVE))
     client_socket_tmp.listen(1)
 
