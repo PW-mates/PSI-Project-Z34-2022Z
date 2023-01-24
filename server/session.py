@@ -83,6 +83,7 @@ class Session:
             print('output: ', output)
         if error:
             print('error: ', error)
+        output, error =  self.run(f'/bin/chmod 750 /home/{username}', True)
         return True
 
     def remove_ftp_user(self, username):
